@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水课生存指南 💤</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
+
+:root {
+  --bg: #f5f0e8;
+  --paper: #fffef7;
+  --ink: #2c2c2c;
+  --ink-light: #666;
+  --accent: #e74c3c;
+  --accent2: #3498db;
+  --accent3: #27ae60;
+  --accent4: #f39c12;
+  --grid-line: #c8daf0;
+  --danger: #e74c3c;
+  --safe: #27ae60;
+  --warn: #f39c12;
+  --shadow: rgba(0,0,0,.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'ZCOOL XiaoWei', serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#game-container {
+  width: 100vw; height: 100vh;
+  position: relative;
+  background:
+    repeating-linear-gradient(transparent, transparent 27px, var(--grid-line) 27px, var(--grid-line) 28px),
+    linear-gradient(90deg, transparent 59px, #f0c0c0 59px, #f0c0c0 61px, transparent 61px);
+  background-color: var(--paper);
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column; align-items: center;
+  padding: 20px; overflow-y: auto;
+  animation: fadeIn .4s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+#title-screen { justify-content: center; gap: 30px; }
+
+.title-logo {
+  font-family: 'ZCOOL KuaiLe', cursive;
+  font-size: clamp(42px, 8vw, 72px);
+  color: var(--accent);
+  text-shadow: 3px 3px 0 rgba(0,0,0,.1);
+  letter-spacing: 4px;
+  animation: titleBounce 2s ease-in-out infinite;
+  text-align: center;
+}
+@keyframes titleBounce { 0%,100%{transform:translateY(0) rotate(-1deg);} 50%{transform:translateY(-8px) rotate(1deg);} }
+
+.title-sub { font-size: 18px; color: var(--ink-light); text-align: center; line-height: 1.8; }
+.title-doodle { font-size: 40px; letter-spacing: 12px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+
+.btn {
+  font-family: 'ZCOOL KuaiLe', cursive; font-size: 20px;
+  padding: 14px 40px; border: 3px solid var(--ink);
+  background: var(--paper); color: var(--ink);
+  cursor: pointer; border-radius: 8px; transition: all .15s;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.btn:hover { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--ink); }
+.btn:active { transform:translate(4px,4px); box-shadow:none; }
+.btn-primary { background:var(--accent); color:#fff; border-color:#c0392b; box-shadow:4px 4px 0 #c0392b; }
+.btn-safe { background:var(--safe); color:#fff; border-color:#1e8449; box-shadow:4px 4px 0 #1e8449; }
+.btn-small { font-size:15px; padding:8px 20px; }
+
+.schedule-title { font-family:'ZCOOL KuaiLe',cursive; font-size:32px; margin:20px 0 10px; color:var(--accent2); }
+
+.schedule-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px; width:100%; max-width:900px; padding:10px 20px;
+}
+
+.course-card {
+  background:var(--paper); border:2px solid var(--ink);
+  border-radius:12px; padding:18px; cursor:pointer;
+  transition:all .2s; box-shadow:3px 3px 0 var(--shadow);
+  position:relative; overflow:hidden;
+}
+.course-card::before { content:''; position:absolute; top:0; left:0; width:6px; height:100%; }
+.course-card:nth-child(1)::before { background:var(--accent); }
+.course-card:nth-child(2)::before { background:var(--accent2); }
+.course-card:nth-child(3)::before { background:var(--accent3); }
+.course-card:nth-child(4)::before { background:var(--accent4); }
+.course-card:hover { transform:translateY(-4px) rotate(-.5deg); box-shadow:6px 6px 0 var(--shadow); }
+
+.course-name { font-family:'ZCOOL KuaiLe',cursive; font-size:20px; margin-bottom:6px; }
+.course-info { font-size:14px; color:var(--ink-light); line-height:1.6; }
+.course-teacher { font-size:15px; margin:6px 0; }
+.course-diff { display:inline-block; padding:2px 10px; border-radius:20px; font-size:13px; color:#fff; margin-top:4px; }
+.diff-easy { background:var(--safe); }
+.diff-medium { background:var(--warn); }
+.diff-hard { background:var(--danger); }
+
+.nav-map {
+  width:100%; max-width:600px; aspect-ratio:3/2;
+  position:relative; border:3px solid var(--ink);
+  border-radius:12px; background:#f0ebe3; margin:10px 0; overflow:hidden;
+}
+
+.map-room {
+  position:absolute; border:2px solid var(--ink); border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'ZCOOL KuaiLe',cursive; font-size:14px;
+  cursor:pointer; transition:all .2s; background:#e8e3db;
+}
+.map-room:hover { background:#d4cfc7; transform:scale(1.05); }
+.map-room.target { background:var(--accent4); animation:pulse 1s infinite; border-color:#e67e22; }
+.map-room.wrong { background:var(--danger); color:#fff; animation:shake .4s; }
+.map-room.correct { background:var(--safe); color:#fff; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(243,156,18,.4);} 50%{box-shadow:0 0 0 8px rgba(243,156,18,0);} }
+@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+.map-corridor { position:absolute; background:#d5d0c8; }
+.nav-hint { font-size:16px; color:var(--ink-light); text-align:center; margin:8px 0; }
+.nav-hint strong { color:var(--accent4); font-family:'ZCOOL KuaiLe',cursive; }
+
+.classroom-layout { display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; max-width:500px; margin:10px 0; }
+.teacher-desk {
+  width:60%; padding:12px; background:#8B4513; color:#fff;
+  text-align:center; border-radius:8px; font-family:'ZCOOL KuaiLe',cursive;
+  font-size:16px; box-shadow:0 4px 8px rgba(0,0,0,.2);
+}
+.seat-row { display:flex; gap:6px; justify-content:center; }
+.seat {
+  width:44px; height:44px; border:2px solid var(--ink); border-radius:6px;
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  cursor:pointer; transition:all .15s; background:var(--paper);
+}
+.seat:hover { background:#fff3cd; transform:scale(1.1); }
+.seat.occupied { background:#ddd; cursor:default; opacity:.6; }
+.seat.selected { background:var(--accent4); border-color:#e67e22; transform:scale(1.15); }
+.seat-label { font-size:13px; color:var(--ink-light); margin-top:2px; }
+.seat-tip {
+  font-size:14px; color:var(--ink-light); text-align:center; max-width:400px;
+  line-height:1.6; padding:10px; background:#fff9e6;
+  border:1px dashed var(--warn); border-radius:8px; margin:8px 0;
+}
+
+#classroom-screen { padding:0; user-select:none; }
+.class-hud {
+  width:100%; padding:10px 16px;
+  display:flex; justify-content:space-between; align-items:center;
+  background:rgba(255,255,255,.9); backdrop-filter:blur(4px);
+  border-bottom:2px solid #eee; z-index:20; flex-wrap:wrap; gap:6px;
+}
+.hud-item { display:flex; align-items:center; gap:6px; font-size:14px; }
+.hud-label { color:var(--ink-light); }
+.hud-bar { width:100px; height:14px; background:#eee; border-radius:7px; overflow:hidden; border:1px solid #ccc; }
+.hud-fill { height:100%; border-radius:7px; transition:width .3s; }
+.hud-fill.fish { background:linear-gradient(90deg,var(--accent2),#2ecc71); }
+.hud-fill.danger { background:linear-gradient(90deg,var(--warn),var(--danger)); }
+.hud-timer { font-family:'ZCOOL KuaiLe',cursive; font-size:22px; color:var(--accent); }
+
+.classroom-scene { flex:1; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:10px; }
+.teacher-area { width:100%; max-width:500px; display:flex; flex-direction:column; align-items:center; margin-bottom:10px; }
+.blackboard {
+  width:90%; height:80px; background:#2d5016;
+  border:6px solid #8B6914; border-radius:4px;
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,.8); font-family:'Ma Shan Zheng',cursive;
+  font-size:20px; text-shadow:1px 1px 2px rgba(0,0,0,.3);
+  box-shadow:inset 0 0 30px rgba(0,0,0,.2); text-align:center; padding:0 10px;
+}
+.teacher-sprite { font-size:56px; margin:8px 0; transition:transform .3s; position:relative; }
+.teacher-status {
+  font-size:14px; padding:4px 14px; border-radius:20px;
+  background:var(--safe); color:#fff; margin-bottom:6px;
+  transition:all .3s; font-family:'ZCOOL KuaiLe',cursive;
+}
+.teacher-status.looking { background:var(--danger); animation:alertPulse .5s infinite; }
+@keyframes alertPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+
+.teacher-bubble {
+  position:absolute; top:-40px; left:50%; transform:translateX(-50%);
+  background:#fff; border:2px solid var(--ink); border-radius:12px;
+  padding:6px 14px; font-size:14px; font-family:'ZCOOL KuaiLe',cursive;
+  white-space:nowrap; opacity:0; transition:opacity .3s; z-index:10; pointer-events:none;
+}
+.teacher-bubble.show { opacity:1; }
+.teacher-bubble::after {
+  content:''; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%);
+  border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--ink);
+}
+
+.actions-panel { width:100%; max-width:520px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:0 10px; }
+.action-btn {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  padding:12px 6px; border:2px solid var(--ink); border-radius:10px;
+  background:var(--paper); cursor:pointer; transition:all .15s;
+  font-family:'ZCOOL KuaiLe',cursive; box-shadow:2px 2px 0 var(--shadow);
+}
+.action-btn:hover { transform:translateY(-2px); box-shadow:3px 3px 0 var(--shadow); }
+.action-btn:active { transform:translateY(1px); box-shadow:none; }
+.action-btn.active { border-color:var(--accent2); background:#e8f4fd; }
+.action-btn.listen-btn.active { border-color:var(--safe); background:#e8fde8; }
+.action-btn .emoji { font-size:28px; }
+.action-btn .label { font-size:13px; }
+.action-btn .pts { font-size:11px; color:var(--ink-light); }
+
+.result-card {
+  background:var(--paper); border:3px solid var(--ink);
+  border-radius:16px; padding:30px; max-width:420px;
+  text-align:center; box-shadow:6px 6px 0 var(--shadow);
+}
+.result-emoji { font-size:64px; margin-bottom:10px; }
+.result-title { font-family:'ZCOOL KuaiLe',cursive; font-size:28px; margin-bottom:10px; }
+.result-desc { font-size:15px; color:var(--ink-light); line-height:1.8; margin-bottom:20px; }
+.result-stats { display:flex; gap:16px; justify-content:center; margin-bottom:20px; flex-wrap:wrap; }
+.stat-box { text-align:center; }
+.stat-val { font-family:'ZCOOL KuaiLe',cursive; font-size:28px; color:var(--accent2); }
+.stat-label { font-size:12px; color:var(--ink-light); }
+.grade-badge { display:inline-block; padding:6px 24px; border-radius:30px; font-family:'ZCOOL KuaiLe',cursive; font-size:22px; color:#fff; margin-bottom:16px; }
+
+.overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.5);
+  display:none; align-items:center; justify-content:center;
+  z-index:100;
+}
+.overlay.active { display:flex; }
+
+.event-popup {
+  background:var(--paper); border:3px solid var(--ink);
+  border-radius:16px; padding:24px; max-width:400px; width:90%;
+  text-align:center; box-shadow:6px 6px 0 rgba(0,0,0,.2);
+  animation:popIn .3s ease; max-height:90vh; overflow-y:auto;
+}
+@keyframes popIn { from{transform:scale(.8);opacity:0;} to{transform:scale(1);opacity:1;} }
+.event-emoji { font-size:48px; margin-bottom:10px; }
+.event-title { font-family:'ZCOOL KuaiLe',cursive; font-size:22px; margin-bottom:8px; }
+.event-desc { font-size:14px; color:var(--ink-light); line-height:1.6; margin-bottom:16px; }
+
+.quiz-options { display:flex; flex-direction:column; gap:8px; margin:12px 0; text-align:left; }
+.quiz-opt {
+  padding:10px 16px; border:2px solid #ddd; border-radius:10px;
+  cursor:pointer; transition:all .15s; font-size:15px;
+  background:var(--paper); display:flex; align-items:center; gap:8px;
+}
+.quiz-opt:hover { border-color:var(--accent2); background:#f0f7ff; transform:translateX(4px); }
+.quiz-opt.correct { border-color:var(--safe); background:#e8fde8; pointer-events:none; }
+.quiz-opt.wrong { border-color:var(--danger); background:#fde8e8; pointer-events:none; }
+.quiz-opt .opt-key {
+  width:26px; height:26px; border-radius:50%; background:var(--accent2);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:bold; flex-shrink:0;
+}
+.quiz-opt.correct .opt-key { background:var(--safe); }
+.quiz-opt.wrong .opt-key { background:var(--danger); }
+
+.quiz-timer-bar { width:100%; height:8px; background:#eee; border-radius:4px; overflow:hidden; margin:8px 0; }
+.quiz-timer-fill { height:100%; background:linear-gradient(90deg,var(--safe),var(--warn),var(--danger)); border-radius:4px; transition:width .1s linear; }
+
+.qte-zone {
+  width:180px; height:180px; border-radius:50%;
+  border:4px dashed var(--accent); display:flex;
+  align-items:center; justify-content:center; flex-direction:column;
+  cursor:pointer; margin:10px auto; transition:all .1s;
+  font-family:'ZCOOL KuaiLe',cursive; gap:4px;
+  background:rgba(231,76,60,.05); user-select:none;
+}
+.qte-zone:active { transform:scale(.93); background:rgba(39,174,96,.15); }
+.qte-zone .qte-emoji { font-size:44px; }
+.qte-zone .qte-label { font-size:13px; color:var(--ink-light); }
+.qte-counter { font-family:'ZCOOL KuaiLe',cursive; font-size:24px; color:var(--accent); margin:4px 0; }
+
+.type-target {
+  font-size:20px; font-family:'Ma Shan Zheng',cursive;
+  padding:12px 20px; background:#f0f7ff; border:2px solid var(--accent2);
+  border-radius:10px; margin:8px 0; letter-spacing:2px;
+}
+.type-input {
+  font-family:'ZCOOL KuaiLe',cursive; font-size:18px;
+  padding:10px 16px; border:3px solid var(--ink);
+  border-radius:8px; text-align:center; width:85%; max-width:300px;
+  margin:8px auto; outline:none; display:block;
+}
+.type-input:focus { border-color:var(--accent2); }
+
+.rollcall-input {
+  font-family:'ZCOOL KuaiLe',cursive; font-size:24px;
+  padding:10px 20px; border:3px solid var(--ink);
+  border-radius:8px; text-align:center; width:200px;
+  margin:10px auto; outline:none; display:block;
+}
+.rollcall-input:focus { border-color:var(--accent2); }
+
+.opinion-btns { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:10px 0; }
+.opinion-btn {
+  padding:8px 18px; border:2px solid var(--ink); border-radius:20px;
+  font-family:'ZCOOL KuaiLe',cursive; font-size:14px;
+  cursor:pointer; transition:all .15s; background:var(--paper);
+}
+.opinion-btn:hover { background:var(--accent2); color:#fff; border-color:var(--accent2); transform:scale(1.05); }
+
+.note-card {
+  background:#fffde6; border:1px solid #e6d9a0; border-radius:8px;
+  padding:14px 18px; font-size:15px; margin:10px auto;
+  transform:rotate(-1deg); box-shadow:2px 2px 6px rgba(0,0,0,.08);
+  font-style:italic; max-width:280px;
+}
+
+.countdown-flash {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  z-index:200; background:rgba(0,0,0,.6);
+  font-family:'ZCOOL KuaiLe',cursive; font-size:80px; color:#fff;
+  text-shadow:0 0 30px rgba(255,255,255,.5);
+  animation:cdPop .8s ease; pointer-events:none;
+}
+@keyframes cdPop { 0%{transform:scale(2);opacity:0;} 30%{transform:scale(1);opacity:1;} 80%{opacity:1;} 100%{opacity:0;} }
+
+@media (max-width:600px) {
+  .title-logo { font-size:36px; }
+  .schedule-grid { grid-template-columns:1fr; }
+  .actions-panel { grid-template-columns:repeat(3,1fr); gap:5px; }
+  .action-btn { padding:8px 4px; }
+  .action-btn .emoji { font-size:22px; }
+  .action-btn .label { font-size:11px; }
+  .hud-bar { width:70px; }
+  .seat { width:36px; height:36px; font-size:14px; }
+  .blackboard { height:60px; font-size:16px; }
+  .teacher-sprite { font-size:42px; }
+  .qte-zone { width:140px; height:140px; }
+  .event-popup { padding:18px 14px; }
+}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="title-screen" class="screen active">
+    <div class="title-doodle">📚 💤 📱 🎮 ✏️</div>
+    <div class="title-logo">水课生存指南</div>
+    <div class="title-sub">上课如上坟，摸鱼要谨慎<br>选对座位，避开老师，安全水到下课！</div>
+    <button class="btn btn-primary" onclick="startGame()">开始摸鱼 🐟</button>
+  </div>
+
+  <div id="schedule-screen" class="screen">
+    <div class="schedule-title">📋 今日课表</div>
+    <p style="color:var(--ink-light);font-size:14px;margin-bottom:6px;">选一门课去水吧！不同老师有不同的脾气哦~</p>
+    <div class="schedule-grid" id="schedule-grid"></div>
+  </div>
+
+  <div id="navigate-screen" class="screen">
+    <div class="schedule-title">🏫 找到教室</div>
+    <div class="nav-hint">快找到 <strong id="target-room-name">???</strong> 吧！点击正确的教室</div>
+    <div class="nav-map" id="nav-map"></div>
+    <div id="nav-msg" style="font-size:15px;min-height:24px;margin-top:6px;font-family:'ZCOOL KuaiLe',cursive;"></div>
+  </div>
+
+  <div id="seat-screen" class="screen">
+    <div class="schedule-title">💺 选座位</div>
+    <div class="seat-tip" id="seat-tip">💡 座位策略很重要！</div>
+    <div class="classroom-layout" id="seat-layout"></div>
+    <button class="btn btn-safe btn-small" id="seat-confirm-btn" style="margin-top:10px;display:none;" onclick="confirmSeat()">就坐这里！</button>
+  </div>
+
+  <div id="classroom-screen" class="screen">
+    <div class="class-hud">
+      <div class="hud-item">
+        <span>🐟</span><span class="hud-label">摸鱼值</span>
+        <div class="hud-bar"><div class="hud-fill fish" id="fish-bar" style="width:0%"></div></div>
+        <span id="fish-val" style="font-size:13px;min-width:32px;">0%</span>
+      </div>
+      <div class="hud-item"><span class="hud-timer" id="class-timer">45:00</span></div>
+      <div class="hud-item">
+        <span>⚠️</span><span class="hud-label">怀疑值</span>
+        <div class="hud-bar"><div class="hud-fill danger" id="danger-bar" style="width:0%"></div></div>
+        <span id="danger-val" style="font-size:13px;min-width:32px;">0%</span>
+      </div>
+    </div>
+    <div class="classroom-scene">
+      <div class="teacher-area">
+        <div class="blackboard" id="blackboard-text">欢迎来到水课</div>
+        <div class="teacher-sprite" id="teacher-sprite">
+          <div class="teacher-bubble" id="teacher-bubble"></div>🧑‍🏫
+        </div>
+        <div class="teacher-status" id="teacher-status">背对黑板写字中...</div>
+      </div>
+      <div style="font-size:13px;color:var(--ink-light);margin:4px 0;">— 你在 <span id="your-seat-label">后排角落</span> —</div>
+      <div class="actions-panel" id="actions-panel"></div>
+    </div>
+  </div>
+
+  <div id="result-screen" class="screen" style="justify-content:center;">
+    <div class="result-card" id="result-card"></div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="event-popup" id="event-popup"></div>
+  </div>
+</div>
+
+<script>
+const G = {
+  currentScreen:'title', selectedCourse:null, selectedSeat:null,
+  seatPos:{row:0,col:0},
+  fishPoints:0, fishTarget:100, suspicion:0, maxSuspicion:100,
+  timeLeft:0, totalTime:0, currentAction:'listen',
+  teacherState:'writing', teacherTimer:5,
+  classInterval:null, teacherInterval:null,
+  eventCooldown:0, caught:false, paused:false,
+  seatRisk:1, seatName:'', comboStreak:0,
+  rollCallCount:0, quizCount:0,
+  usedQuizIds: new Set(), _opGood:[]
+};
+
+const COURSES = [
+  {
+    id:'marxism', name:'马克思主义基本原理', room:'A-301',
+    teacher:'王教授', teacherEmoji:'👨‍🏫', type:'chill',
+    desc:'佛系型 · 照着PPT念，基本不看下面',
+    difficulty:'easy', diffLabel:'简单',
+    scanRate:0.08, scanDuration:2, rollCallChance:0.02,
+    blackboardTexts:['生产力决定生产关系','经济基础决定上层建筑','对立统一规律','量变引起质变','剩余价值理论'],
+    speeches:['同学们翻到PPT第38页...','这个知识点考试要考的','我再讲五分钟就下课','大家记一下这个重点'],
+    quizzes: [
+      { q:'唯物辩证法的三大规律不包括？', opts:['对立统一','量变质变','否定之否定','因果循环'], ans:3 },
+      { q:'社会发展的根本动力是？', opts:['阶级斗争','生产力与生产关系的矛盾','科学技术','人民群众'], ans:1 },
+      { q:'"物质决定意识"属于哪种哲学观点？', opts:['唯心主义','二元论','唯物主义','不可知论'], ans:2 },
+      { q:'资本主义的基本矛盾是？', opts:['供需矛盾','生产社会化与私人占有','贫富差距','劳资对立'], ans:1 },
+      { q:'剩余价值是由什么创造的？', opts:['机器设备','雇佣工人的剩余劳动','资本家的管理','市场竞争'], ans:1 },
+      { q:'以下哪个不是马克思的著作？', opts:['资本论','共产党宣言','国富论','德意志意识形态'], ans:2 },
+    ],
+    recite:['生产力决定生产关系','实践是检验真理的唯一标准','经济基础决定上层建筑'],
+    opinions:[
+      { q:'你觉得"物质决定意识"这个观点对吗？说说看' },
+      { q:'马克思主义在当代还有意义吗？' },
+    ],
+  },
+  {
+    id:'career', name:'大学生职业规划', room:'B-205',
+    teacher:'李老师', teacherEmoji:'👩‍🏫', type:'scanner',
+    desc:'巡视型 · 喜欢在教室走动，眼神犀利',
+    difficulty:'medium', diffLabel:'中等',
+    scanRate:0.18, scanDuration:4, rollCallChance:0.04,
+    blackboardTexts:['认识自我','SWOT分析法','职业锚理论','简历制作要点','霍兰德职业类型'],
+    speeches:['后排那位同学在干什么？','抬起头来听课！','这个面试技巧很重要','来，我们做个小练习'],
+    quizzes: [
+      { q:'SWOT分析中，S代表什么？', opts:['Strategy','Strength','System','Solution'], ans:1 },
+      { q:'霍兰德职业类型有几种？', opts:['4种','5种','6种','8种'], ans:2 },
+      { q:'以下哪项不属于求职简历必备要素？', opts:['教育背景','工作经历','星座血型','联系方式'], ans:2 },
+      { q:'职业锚理论的提出者是？', opts:['马斯洛','施恩','德鲁克','麦克利兰'], ans:1 },
+      { q:'面试中"自我介绍"应该怎么回答？', opts:['背简历','讲段子','匹配岗位亮点','聊家庭'], ans:2 },
+      { q:'以下哪个属于"可迁移技能"？', opts:['Java编程','沟通协调','驾驶挖掘机','会计从业'], ans:1 },
+    ],
+    recite:['认识自我是职业规划的第一步','知己知彼百战不殆','SWOT分析法'],
+    opinions:[
+      { q:'毕业后打算考研还是直接工作？为什么？' },
+      { q:'大学期间最重要的能力是什么？' },
+    ],
+  },
+  {
+    id:'military', name:'军事理论', room:'C-101',
+    teacher:'张教官', teacherEmoji:'💂', type:'strict',
+    desc:'严厉型 · 频繁扫视，发现必抓',
+    difficulty:'hard', diffLabel:'困难',
+    scanRate:0.25, scanDuration:5, rollCallChance:0.07,
+    blackboardTexts:['信息化战争特征','国防法概述','兵棋推演','军事高技术应用','孙子兵法'],
+    speeches:['坐直了！','我看到有人在玩手机！','这位同学站起来回答','注意课堂纪律！'],
+    quizzes: [
+      { q:'解放军建军节是哪一天？', opts:['7月1日','8月1日','10月1日','5月4日'], ans:1 },
+      { q:'《孙子兵法》共有多少篇？', opts:['10篇','12篇','13篇','15篇'], ans:2 },
+      { q:'我国的国防政策是？', opts:['积极防御','先发制人','以攻代守','闭关锁国'], ans:0 },
+      { q:'以下哪个不属于信息化战争特征？', opts:['精确打击','体系对抗','白刃格斗','网络攻防'], ans:2 },
+      { q:'世界上第一颗原子弹爆炸于哪一年？', opts:['1942年','1945年','1949年','1952年'], ans:1 },
+      { q:'中国第一艘航空母舰叫什么？', opts:['山东舰','辽宁舰','福建舰','长城舰'], ans:1 },
+    ],
+    recite:['知己知彼百战不殆','兵者国之大事死生之地','不战而屈人之兵'],
+    opinions:[
+      { q:'大学生军训有必要吗？说说理由' },
+      { q:'和平年代为什么还要学军事理论？' },
+    ],
+  },
+  {
+    id:'psychology', name:'心理健康教育', room:'D-402',
+    teacher:'陈老师', teacherEmoji:'🧑‍⚕️', type:'unpredictable',
+    desc:'随机型 · 行为不可预测，偶尔突然互动',
+    difficulty:'medium', diffLabel:'中等',
+    scanRate:0.13, scanDuration:3, rollCallChance:0.06,
+    blackboardTexts:['情绪管理','人际关系处理','压力应对策略','ABC情绪理论','马斯洛需求层次'],
+    speeches:['来，大家做一个小测试','有没有同学想分享一下？','这很正常，不用紧张','后排同学没事吧？我看你...'],
+    quizzes: [
+      { q:'马斯洛需求层次最底层是？', opts:['安全需求','生理需求','社交需求','尊重需求'], ans:1 },
+      { q:'ABC情绪理论中B代表？', opts:['Behavior','Belief','Balance','Brain'], ans:1 },
+      { q:'以下哪个不是心理防御机制？', opts:['投射','升华','光合作用','合理化'], ans:2 },
+      { q:'抑郁症属于？', opts:['人格障碍','情绪障碍','精神分裂','焦虑障碍'], ans:1 },
+      { q:'"踢猫效应"说明的是？', opts:['动物心理','情绪传递链','猫的行为学','宠物治疗'], ans:1 },
+      { q:'弗洛伊德的人格结构不包括？', opts:['本我','自我','超我','真我'], ans:3 },
+    ],
+    recite:['情绪ABC理论','马斯洛需求层次','共情是理解他人感受的能力'],
+    opinions:[
+      { q:'遇到压力的时候一般怎么缓解？' },
+      { q:'心理咨询是"有病"才去的吗？' },
+    ],
+  },
+];
+
+const ACTIONS = [
+  { id:'listen', emoji:'📖', label:'认真听课', pts:0,   risk:0 },
+  { id:'daze',   emoji:'😶', label:'放空发呆', pts:0.3, risk:0.2 },
+  { id:'doodle', emoji:'✏️', label:'涂鸦画画', pts:0.5, risk:0.3 },
+  { id:'novel',  emoji:'📕', label:'看小说',   pts:0.8, risk:0.5 },
+  { id:'phone',  emoji:'📱', label:'刷手机',   pts:1.2, risk:0.9 },
+  { id:'sleep',  emoji:'😴', label:'睡觉',     pts:1.5, risk:1.2 },
+];
+
+function $(id){ return document.getElementById(id); }
+function showScreen(n){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(n+'-screen').classList.add('active'); G.currentScreen=n; }
+
+let _clean=null;
+function showOverlay(emoji,title,desc,btnText,cb){
+  G.paused=true; if(_clean){_clean();_clean=null;}
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">${emoji}</div>
+    <div class="event-title">${title}</div>
+    <div class="event-desc">${desc}</div>
+    <button class="btn btn-small" id="ob">✓ ${btnText}</button>`;
+  $('overlay').classList.add('active');
+  $('ob').onclick=()=>{ $('overlay').classList.remove('active'); G.paused=false; if(cb)cb(); };
+}
+function closeOverlay(){ $('overlay').classList.remove('active'); G.paused=false; }
+
+/* ═══ 1. MULTIPLE CHOICE QUIZ ═══ */
+function triggerQuiz(){
+  G.paused=true; G.quizCount++;
+  const c=G.selectedCourse;
+  let pool=c.quizzes.map((q,i)=>({...q,idx:i})).filter(q=>!G.usedQuizIds.has(c.id+q.idx));
+  if(!pool.length){G.usedQuizIds.clear();pool=c.quizzes.map((q,i)=>({...q,idx:i}));}
+  const quiz=pool[Math.floor(Math.random()*pool.length)];
+  G.usedQuizIds.add(c.id+quiz.idx);
+  const keys='ABCD',tl=8; let done=false,tv=tl;
+
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">📝</div>
+    <div class="event-title">老师突然提问！</div>
+    <div class="event-desc">"${quiz.q}"</div>
+    <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="qtf" style="width:100%"></div></div>
+    <div id="qtt" style="font-family:'ZCOOL KuaiLe',cursive;font-size:18px;color:var(--accent);">${tl}s</div>
+    <div class="quiz-options" id="qos">${quiz.opts.map((o,i)=>`<div class="quiz-opt" data-i="${i}"><span class="opt-key">${keys[i]}</span><span>${o}</span></div>`).join('')}</div>`;
+  $('overlay').classList.add('active');
+
+  document.querySelectorAll('#qos .quiz-opt').forEach(el=>{
+    el.onclick=()=>{ if(done)return; done=true; clearInterval(iv); doQuizAnswer(parseInt(el.dataset.i),quiz.ans); };
+  });
+
+  const iv=setInterval(()=>{ if(done)return; tv-=0.1;
+    const f=$('qtf'),t=$('qtt'); if(f)f.style.width=(tv/tl*100)+'%'; if(t)t.textContent=Math.ceil(tv)+'s';
+    if(tv<=0){clearInterval(iv);if(!done){done=true;doQuizTimeout(quiz.ans);}}
+  },100);
+  _clean=()=>{clearInterval(iv);done=true;};
+
+  const kh=e=>{ if(done)return; const m={a:0,b:1,c:2,d:3,'1':0,'2':1,'3':2,'4':3}; const i=m[e.key.toLowerCase()];
+    if(i!==undefined){done=true;clearInterval(iv);document.removeEventListener('keydown',kh);doQuizAnswer(i,quiz.ans);}};
+  document.addEventListener('keydown',kh);
+  setTimeout(()=>document.removeEventListener('keydown',kh),(tl+1)*1000);
+}
+
+function doQuizAnswer(ch,co){
+  document.querySelectorAll('#qos .quiz-opt').forEach(o=>{o.style.pointerEvents='none';const i=+o.dataset.i;if(i===co)o.classList.add('correct');if(i===ch&&i!==co)o.classList.add('wrong');});
+  setTimeout(()=>{closeOverlay();if(ch===co){G.suspicion=Math.max(0,G.suspicion-12);showOverlay('✅','回答正确！','老师满意地点了点头\n怀疑值 -12','继续');}
+  else{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+20);showOverlay('❌','回答错误！','老师皱了皱眉..."上课认真听！"\n怀疑值 +20','继续');}},800);
+}
+function doQuizTimeout(co){
+  document.querySelectorAll('#qos .quiz-opt').forEach(o=>{o.style.pointerEvents='none';if(+o.dataset.i===co)o.classList.add('correct');});
+  setTimeout(()=>{closeOverlay();G.suspicion=Math.min(G.maxSuspicion,G.suspicion+25);showOverlay('⏰','超时了！','你愣在那里说不出话...\n怀疑值 +25','继续');},600);
+}
+
+/* ═══ 2. RECITE / TYPE CHALLENGE ═══ */
+function triggerRecite(){
+  G.paused=true; G.quizCount++;
+  const target=G.selectedCourse.recite[Math.floor(Math.random()*G.selectedCourse.recite.length)];
+  let done=false,tv=10;
+
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">🗣️</div>
+    <div class="event-title">老师让你朗读！</div>
+    <div class="event-desc">"这位同学，把这句话读一遍"</div>
+    <div class="type-target">${target}</div>
+    <input class="type-input" id="ri" placeholder="快打出来！" autofocus>
+    <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="rf" style="width:100%"></div></div>
+    <div id="rt" style="font-family:'ZCOOL KuaiLe',cursive;font-size:16px;color:var(--accent);">10s</div>`;
+  $('overlay').classList.add('active');
+  setTimeout(()=>$('ri')?.focus(),100);
+
+  const iv=setInterval(()=>{if(done)return;tv-=0.1;const f=$('rf'),t=$('rt');if(f)f.style.width=(tv/10*100)+'%';if(t)t.textContent=Math.ceil(tv)+'s';
+    if(tv<=0){clearInterval(iv);if(!done){done=true;finishRecite(false,target);}}},100);
+  _clean=()=>{clearInterval(iv);done=true;};
+
+  const check=()=>{if(done)return;if(($('ri')?.value||'').trim()===target){done=true;clearInterval(iv);finishRecite(true,target);}};
+  $('ri')?.addEventListener('input',check);
+  $('ri')?.addEventListener('keydown',e=>{if(e.key==='Enter')check();});
+}
+function finishRecite(ok,t){closeOverlay();if(ok){G.suspicion=Math.max(0,G.suspicion-15);showOverlay('✅','读得不错！','"嗯，很好，请坐。"\n怀疑值 -15','继续');}
+else{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+20);showOverlay('😓','支支吾吾...',`正确答案："${t}"\n怀疑值 +20`,'继续');}}
+
+/* ═══ 3. OPINION QUESTION ═══ */
+function triggerOpinion(){
+  G.paused=true; G.quizCount++;
+  const op=G.selectedCourse.opinions[Math.floor(Math.random()*G.selectedCourse.opinions.length)];
+  let done=false,tv=8;
+
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">💬</div>
+    <div class="event-title">老师问你的看法！</div>
+    <div class="event-desc">"${op.q}"</div>
+    <input class="type-input" id="oi" placeholder="快说点什么..." autofocus style="width:90%;max-width:320px;">
+    <div style="font-size:12px;color:var(--ink-light);margin:4px 0;">输入任意回答即可</div>
+    <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="of" style="width:100%"></div></div>
+    <div id="ot" style="font-family:'ZCOOL KuaiLe',cursive;font-size:16px;color:var(--accent);">8s</div>
+    <button class="btn btn-primary btn-small" style="margin-top:8px;" id="osb">回答！</button>`;
+  $('overlay').classList.add('active');
+  setTimeout(()=>$('oi')?.focus(),100);
+
+  const iv=setInterval(()=>{if(done)return;tv-=0.1;const f=$('of'),t=$('ot');if(f)f.style.width=(tv/8*100)+'%';if(t)t.textContent=Math.ceil(tv)+'s';
+    if(tv<=0){clearInterval(iv);if(!done){done=true;finishOpinion(false);}}},100);
+  _clean=()=>{clearInterval(iv);done=true;};
+
+  const sub=()=>{if(done)return;done=true;clearInterval(iv);finishOpinion(($('oi')?.value||'').trim().length>=1);};
+  $('osb').onclick=sub;
+  $('oi')?.addEventListener('keydown',e=>{if(e.key==='Enter')sub();});
+}
+function finishOpinion(ok){closeOverlay();if(ok){G.suspicion=Math.max(0,G.suspicion-8);
+  const r=['老师："说得不错"','老师："嗯，有自己的想法"','"行，请坐吧"'];showOverlay('👍','回答得体！',r[Math.floor(Math.random()*r.length)]+'\n怀疑值 -8','继续');}
+else{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+18);showOverlay('😶','沉默了...','"连看法都没有？上课有没有听？"\n怀疑值 +18','继续');}}
+
+/* ═══ 4. QTE: HIDE PHONE ═══ */
+function triggerHidePhone(){
+  G.paused=true;
+  const need=6+Math.floor(Math.random()*5); let taps=0,done=false,tv=3.5;
+
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">🚨</div>
+    <div class="event-title">老师走过来了！</div>
+    <div class="event-desc">快速点击收起手机/藏好东西！</div>
+    <div class="qte-zone" id="qz">
+      <span class="qte-emoji">📱</span>
+      <span class="qte-label">疯狂点击！</span>
+    </div>
+    <div class="qte-counter"><span id="qc">0</span> / ${need}</div>
+    <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="qf" style="width:100%"></div></div>`;
+  $('overlay').classList.add('active');
+
+  const iv=setInterval(()=>{if(done)return;tv-=0.05;const f=$('qf');if(f)f.style.width=(tv/3.5*100)+'%';
+    if(tv<=0){clearInterval(iv);if(!done){done=true;finishQTE(false);}}},50);
+  _clean=()=>{clearInterval(iv);done=true;};
+
+  const emojis=['📱','📕','😴','🎮','📝','🍬'];
+  $('qz').onclick=()=>{if(done)return;taps++;const c=$('qc');if(c)c.textContent=taps;
+    const z=$('qz');if(z){z.querySelector('.qte-emoji').textContent=emojis[taps%emojis.length];z.style.borderColor=`hsl(${120*taps/need},70%,45%)`;}
+    if(taps>=need){done=true;clearInterval(iv);finishQTE(true);}};
+}
+function finishQTE(ok){closeOverlay();if(ok){G.suspicion=Math.max(0,G.suspicion-5);showOverlay('😮‍💨','藏好了！','千钧一发！老师什么都没发现\n怀疑值 -5','继续');}
+else{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+30);showOverlay('😱','被看到了！','"把手机交出来！"\n怀疑值 +30','继续');}}
+
+/* ═══ 5. MATH ROLL CALL ═══ */
+function triggerMathRC(){
+  G.paused=true; G.rollCallCount++;
+  const ops=[
+    ()=>{const a=Math.floor(Math.random()*30)+5,b=Math.floor(Math.random()*20)+3;return{q:`${a} + ${b}`,ans:a+b};},
+    ()=>{const a=Math.floor(Math.random()*30)+20,b=Math.floor(Math.random()*15)+3;return{q:`${a} - ${b}`,ans:a-b};},
+    ()=>{const a=Math.floor(Math.random()*12)+2,b=Math.floor(Math.random()*9)+2;return{q:`${a} × ${b}`,ans:a*b};},
+  ];
+  const{q,ans}=ops[Math.floor(Math.random()*ops.length)]();
+  let done=false,tv=6;
+
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">🙋</div>
+    <div class="event-title">老师突然点名！</div>
+    <div class="event-desc">"那位同学，${q} 等于多少？"</div>
+    <input type="number" class="rollcall-input" id="ra" placeholder="??" autofocus>
+    <button class="btn btn-primary btn-small" style="margin-top:6px;" id="rs">回答！</button>
+    <div class="quiz-timer-bar" style="margin-top:8px;"><div class="quiz-timer-fill" id="rmf" style="width:100%"></div></div>
+    <div id="rmt" style="font-family:'ZCOOL KuaiLe',cursive;font-size:16px;color:var(--accent);">6s</div>`;
+  $('overlay').classList.add('active');
+  setTimeout(()=>$('ra')?.focus(),100);
+
+  const iv=setInterval(()=>{if(done)return;tv-=0.1;const f=$('rmf'),t=$('rmt');if(f)f.style.width=(tv/6*100)+'%';if(t)t.textContent=Math.ceil(tv)+'s';
+    if(tv<=0){clearInterval(iv);if(!done){done=true;finishMath(false,ans);}}},100);
+  _clean=()=>{clearInterval(iv);done=true;};
+
+  const sub=()=>{if(done)return;done=true;clearInterval(iv);finishMath(parseInt($('ra')?.value)===ans,ans);};
+  $('rs').onclick=sub; $('ra')?.addEventListener('keydown',e=>{if(e.key==='Enter')sub();});
+}
+function finishMath(ok,ans){closeOverlay();if(ok){G.suspicion=Math.max(0,G.suspicion-10);showOverlay('✅','回答正确！','老师满意地点了点头\n怀疑值 -10','继续');}
+else{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+25);showOverlay('❌','回答错误！',`正确答案是 ${ans}\n怀疑值 +25`,'继续');}}
+
+/* ═══ 6. SEATMATE EVENTS ═══ */
+function triggerSeatmate(){
+  G.paused=true;
+  const evts=[
+    { emoji:'📝', title:'同桌递来小纸条', note:'兄弟，帮我答个到，待会点名说我在',
+      ch:['帮他答到','假装没看见'],
+      fx:[()=>{G.suspicion+=5;G.fishPoints=Math.min(G.fishTarget,G.fishPoints+8);return'义气！摸鱼值+8，怀疑值+5';},
+          ()=>'你假装没看到...同桌投来幽怨的眼神']},
+    { emoji:'🍬', title:'同桌偷偷给你零食', note:'嘿，吃颗糖提提神~ 🍭',
+      ch:['接过来吃','婉拒'],
+      fx:[()=>{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+3);G.suspicion+=3;return'悄悄吃了颗糖，心情不错！摸鱼值+3';},
+          ()=>'你摇了摇头，同桌自己吃了']},
+    { emoji:'🛡️', title:'同桌帮你打掩护！', note:'老师刚才看你这边了，我帮你挡了一下~',
+      ch:['感谢同桌！'],
+      fx:[()=>{G.suspicion=Math.max(0,G.suspicion-10);return'好兄弟一生平安！怀疑值-10';}]},
+    { emoji:'💤', title:'同桌睡着了...', note:'Zzz...（同桌打起了呼噜）',
+      ch:['赶紧戳醒他','不管'],
+      fx:[()=>{G.suspicion+=2;return'你把同桌戳醒了，怀疑值+2';},
+          ()=>{G.suspicion+=8;return'呼噜越来越大...老师看过来了，怀疑值+8';}]},
+    { emoji:'📲', title:'同桌手机响了！', note:'叮叮叮——♪',
+      ch:['帮他按静音','看热闹'],
+      fx:[()=>{G.suspicion=Math.max(0,G.suspicion-5);return'你帮同桌按了静音，怀疑值-5';},
+          ()=>{G.suspicion+=3;return'老师顺便瞟了你一眼，怀疑值+3';}]},
+    { emoji:'💌', title:'同桌传来八卦', note:'嘿你知道吗，隔壁班XXX和YYY好了！',
+      ch:['吃瓜！','不感兴趣'],
+      fx:[()=>{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+4);G.suspicion+=4;return'边吃瓜边走神~摸鱼值+4，怀疑值+4';},
+          ()=>'你专注听课...才怪']},
+    { emoji:'🎮', title:'同桌想联机打游戏', note:'开一把？我已经开好房间了',
+      ch:['好啊开冲','算了吧'],
+      fx:[()=>{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+10);G.suspicion+=12;return'太刺激了！摸鱼值+10，但怀疑值+12';},
+          ()=>{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+1);return'理智战胜了欲望...但心里痒痒的';}]},
+  ];
+  const e=evts[Math.floor(Math.random()*evts.length)];
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">${e.emoji}</div>
+    <div class="event-title">${e.title}</div>
+    <div class="note-card">${e.note}</div>
+    <div class="opinion-btns">${e.ch.map((c,i)=>`<div class="opinion-btn" data-i="${i}">${c}</div>`).join('')}</div>`;
+  $('overlay').classList.add('active');
+  document.querySelectorAll('.opinion-btn').forEach(b=>{
+    b.onclick=()=>{const r=e.fx[+b.dataset.i]();closeOverlay();showOverlay(e.emoji,'结果',r,'继续上课');};
+  });
+}
+
+/* ═══ 7. SPOT CHECK ═══ */
+function triggerSpotCheck(){
+  G.paused=true;
+  const fishing=G.currentAction!=='listen';
+  if(fishing){
+    const pen={daze:{m:'在发呆',s:8},doodle:{m:'在画画',s:12},novel:{m:'看小说',s:18},phone:{m:'玩手机！',s:28},sleep:{m:'在睡觉！！',s:35}};
+    const p=pen[G.currentAction]||{m:'没听课',s:15};
+    G.suspicion=Math.min(G.maxSuspicion,G.suspicion+p.s);
+    G.currentAction='listen'; renderActions();
+    $('event-popup').innerHTML=`<div class="event-emoji">😱</div><div class="event-title">老师突然看向你！</div>
+      <div class="event-desc">"发现你${p.m}"<br>你赶紧假装翻书...<br>怀疑值 +${p.s}</div>
+      <button class="btn btn-small" onclick="closeOverlay()">😨 继续</button>`;
+  } else {
+    G.suspicion=Math.max(0,G.suspicion-5);
+    $('event-popup').innerHTML=`<div class="event-emoji">😌</div><div class="event-title">老师扫了你一眼</div>
+      <div class="event-desc">还好你在认真听课！怀疑值 -5</div>
+      <button class="btn btn-small" onclick="closeOverlay()">继续</button>`;
+  }
+  $('overlay').classList.add('active');
+}
+
+/* ═══ 8. GROUP DISCUSSION ═══ */
+function triggerGroupDiscuss(){
+  G.paused=true;
+  const topics={marxism:['唯物辩证法的应用','实践与真理'],career:['简历怎么写','面试技巧'],military:['国防意识','信息化战争'],psychology:['考试焦虑','人际关系']};
+  const ts=topics[G.selectedCourse.id]||['今天学的内容'];
+  const topic=ts[Math.floor(Math.random()*ts.length)];
+
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">👥</div><div class="event-title">课堂讨论环节！</div>
+    <div class="event-desc">老师让分组讨论：<br><strong>"${topic}"</strong></div>
+    <div class="opinion-btns">
+      <div class="opinion-btn" data-i="0">🗣️ 积极发言</div>
+      <div class="opinion-btn" data-i="1">🤫 默默划水</div>
+      <div class="opinion-btn" data-i="2">📱 趁机摸鱼</div>
+    </div>`;
+  $('overlay').classList.add('active');
+  document.querySelectorAll('.opinion-btn').forEach(b=>{
+    b.onclick=()=>{const i=+b.dataset.i;closeOverlay();
+      if(i===0){G.suspicion=Math.max(0,G.suspicion-15);showOverlay('⭐','表现优秀！','老师对你印象深刻！怀疑值-15','继续');}
+      else if(i===1){G.fishPoints=Math.min(G.fishTarget,G.fishPoints+5);showOverlay('😐','低调划水','假装讨论实际走神，摸鱼值+5','继续');}
+      else{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+12);if(Math.random()<.35){G.suspicion=Math.min(G.maxSuspicion,G.suspicion+20);showOverlay('😰','被发现了！','老师发现你在刷手机...摸鱼值+12，怀疑值+20','继续');}
+        else showOverlay('😏','完美摸鱼','趁混乱偷偷刷手机，摸鱼值+12','继续');}};
+  });
+}
+
+/* ═══ 9. READ THE BOARD ═══ */
+function triggerReadBoard(){
+  G.paused=true; G.quizCount++;
+  const c=G.selectedCourse;
+  const text=c.blackboardTexts[Math.floor(Math.random()*c.blackboardTexts.length)];
+  const opts=[text,...c.blackboardTexts.filter(t=>t!==text).sort(()=>Math.random()-.5).slice(0,2)];
+  for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+  const ci=opts.indexOf(text);
+
+  $('event-popup').innerHTML=`
+    <div class="event-emoji">👀</div><div class="event-title">老师问黑板上写的什么！</div>
+    <div class="event-desc">"这位同学，刚才写的是什么？"<br>（你刚才没注意看...）</div>
+    <div class="quiz-options" id="bos">${opts.map((o,i)=>`<div class="quiz-opt" data-i="${i}"><span class="opt-key">${i+1}</span><span>${o}</span></div>`).join('')}</div>`;
+  $('overlay').classList.add('active');
+  document.querySelectorAll('#bos .quiz-opt').forEach(el=>{
+    el.onclick=()=>{const ch=+el.dataset.i;document.querySelectorAll('#bos .quiz-opt').forEach(o=>{o.style.pointerEvents='none';if(+o.dataset.i===ci)o.classList.add('correct');if(+o.dataset.i===ch&&ch!==ci)o.classList.add('wrong');});
+      setTimeout(()=>{closeOverlay();if(ch===ci){G.suspicion=Math.max(0,G.suspicion-10);showOverlay('✅','答对了！','"看来有在听课"\n怀疑值-10','继续');}
+        else{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+22);showOverlay('❌','答错了...',`正确答案："${text}"\n怀疑值+22`,'继续');}},700);};
+  });
+}
+
+/* ═══ ATMOSPHERE EVENTS ═══ */
+const ATMO=[
+  {e:'📳',t:'手机响了！',d:'忘记静音了！怀疑值+15',f:()=>{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+15);}},
+  {e:'🤧',t:'同桌打了个喷嚏',d:'老师注意力被吸引了\n怀疑值-8',f:()=>{G.suspicion=Math.max(0,G.suspicion-8);}},
+  {e:'📦',t:'课代表发材料',d:'大家翻找材料，摸鱼值+5',f:()=>{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+5);}},
+  {e:'🔔',t:'隔壁班很吵',d:'老师出去查看了\n怀疑值-12',f:()=>{G.suspicion=Math.max(0,G.suspicion-12);G.teacherState='writing';G.teacherTimer=5;}},
+  {e:'💡',t:'投影仪坏了',d:'老师去修投影仪，摸鱼值+8',f:()=>{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+8);G.teacherState='writing';G.teacherTimer=6;}},
+  {e:'😂',t:'老师讲了个笑话',d:'氛围轻松了\n怀疑值-5',f:()=>{G.suspicion=Math.max(0,G.suspicion-5);}},
+  {e:'⚡',t:'你困得不行了',d:'眼皮子打架...\n怀疑值+10',f:()=>{G.suspicion=Math.min(G.maxSuspicion,G.suspicion+10);}},
+  {e:'🪟',t:'窗外有人打球',d:'忍不住看了一眼\n怀疑值+5，摸鱼值+2',f:()=>{G.suspicion+=5;G.fishPoints=Math.min(G.fishTarget,G.fishPoints+2);}},
+  {e:'🐦',t:'一只鸟飞进教室！',d:'全班哄堂大乱！\n怀疑值-15',f:()=>{G.suspicion=Math.max(0,G.suspicion-15);G.teacherState='writing';G.teacherTimer=4;}},
+  {e:'🔌',t:'教室停电了！',d:'黑暗中大家都摸出手机\n摸鱼值+10',f:()=>{G.fishPoints=Math.min(G.fishTarget,G.fishPoints+10);}},
+  {e:'🥱',t:'传染性哈欠',d:'旁边有人打哈欠，你也打了\n怀疑值+5',f:()=>{G.suspicion+=5;}},
+  {e:'🎵',t:'外面广播响了',d:'老师暂停等广播结束\n怀疑值-6',f:()=>{G.suspicion=Math.max(0,G.suspicion-6);}},
+];
+
+/* ═══ EVENT DISPATCHER ═══ */
+function triggerEvent(){
+  const pool=[
+    {fn:triggerQuiz,w:20},{fn:triggerRecite,w:10},{fn:triggerOpinion,w:12},
+    {fn:triggerHidePhone,w:8},{fn:triggerMathRC,w:10},{fn:triggerSeatmate,w:15},
+    {fn:triggerSpotCheck,w:12},{fn:triggerGroupDiscuss,w:6},{fn:triggerReadBoard,w:10},
+    {fn:()=>{const a=ATMO[Math.floor(Math.random()*ATMO.length)];a.f();showOverlay(a.e,a.t,a.d,'继续');},w:22},
+  ].map(p=>{
+    let w=p.w;
+    if((G.currentAction==='phone'||G.currentAction==='sleep')&&(p.fn===triggerHidePhone||p.fn===triggerSpotCheck))w*=2.5;
+    if(G.suspicion>50&&p.fn===triggerSpotCheck)w*=1.5;
+    if(G.quizCount>=5&&(p.fn===triggerQuiz||p.fn===triggerRecite||p.fn===triggerReadBoard||p.fn===triggerMathRC))w*=.3;
+    return{...p,w};
+  });
+  const tot=pool.reduce((s,p)=>s+p.w,0);let r=Math.random()*tot;
+  for(const p of pool){r-=p.w;if(r<=0){p.fn();return;}}
+  pool[0].fn();
+}
+
+/* ═══ PHASES 1-3 ═══ */
+function startGame(){renderSchedule();showScreen('schedule');}
+function renderSchedule(){$('schedule-grid').innerHTML=COURSES.map(c=>`
+  <div class="course-card" onclick="selectCourse('${c.id}')">
+    <div class="course-name">${c.teacherEmoji} ${c.name}</div>
+    <div class="course-teacher">👤 ${c.teacher}</div>
+    <div class="course-info">${c.desc}</div>
+    <div class="course-info">📍 ${c.room}</div>
+    <span class="course-diff diff-${c.difficulty}">${c.diffLabel}</span>
+  </div>`).join('');}
+function selectCourse(id){G.selectedCourse=COURSES.find(c=>c.id===id);startNav();}
+
+function startNav(){showScreen('navigate');$('target-room-name').textContent=G.selectedCourse.room;renderMap();}
+function renderMap(){
+  const map=$('nav-map');
+  const rooms=[{id:'A-301',x:5,y:5,w:18,h:14,l:'A-301'},{id:'A-302',x:25,y:5,w:18,h:14,l:'A-302'},
+    {id:'A-303',x:45,y:5,w:18,h:14,l:'A-303'},{id:'B-205',x:5,y:42,w:18,h:14,l:'B-205'},
+    {id:'B-206',x:25,y:42,w:18,h:14,l:'B-206'},{id:'C-101',x:45,y:42,w:18,h:14,l:'C-101'},
+    {id:'D-401',x:72,y:5,w:18,h:14,l:'D-401'},{id:'D-402',x:72,y:42,w:18,h:14,l:'D-402'},
+    {id:'WC',x:72,y:75,w:18,h:14,l:'🚻 厕所'},{id:'LIB',x:5,y:75,w:25,h:14,l:'📚 图书馆'},
+    {id:'CAFE',x:35,y:75,w:25,h:14,l:'☕ 小卖部'}];
+  const cors=[{x:0,y:22,w:100,h:6},{x:0,y:60,w:100,h:6},{x:65,y:5,w:5,h:85},{x:33,y:22,w:5,h:44}];
+  let h='';cors.forEach(c=>{h+=`<div class="map-corridor" style="left:${c.x}%;top:${c.y}%;width:${c.w}%;height:${c.h}%"></div>`;});
+  const t=G.selectedCourse.room;
+  rooms.forEach(r=>{h+=`<div class="map-room ${r.id===t?'target':''}" data-room="${r.id}" style="left:${r.x}%;top:${r.y}%;width:${r.w}%;height:${r.h}%" onclick="clickRoom('${r.id}')">${r.l}</div>`;});
+  map.innerHTML=h;$('nav-msg').textContent='';
+}
+
+let navA=0;
+function clickRoom(id){
+  const t=G.selectedCourse.room;
+  if(id===t){document.querySelectorAll('.map-room').forEach(r=>{if(r.dataset.room===id)r.classList.add('correct');});
+    $('nav-msg').innerHTML='✅ 找到了！';$('nav-msg').style.color='var(--safe)';navA=0;setTimeout(()=>startSeat(),800);}
+  else{navA++;document.querySelectorAll('.map-room').forEach(r=>{if(r.dataset.room===id){r.classList.add('wrong');setTimeout(()=>r.classList.remove('wrong'),500);}});
+    $('nav-msg').innerHTML='❌ '+['走错了！','别人的课！','方向错了！','不是这间！'][navA%4];$('nav-msg').style.color='var(--danger)';}
+}
+
+function startSeat(){showScreen('seat');renderSeats();$('seat-confirm-btn').style.display='none';G.selectedSeat=null;
+  const tips={chill:'💡 佛系老师，后排更保险。',scanner:'💡 巡视型老师！建议后排或角落。',strict:'💡 严厉老师！角落相对安全，但可能随时点名。',unpredictable:'💡 行为不可预测...选个幸运位置吧！'};
+  $('seat-tip').textContent=tips[G.selectedCourse.type]||tips.chill;}
+
+function renderSeats(){
+  const la=$('seat-layout'),R=5,C=6,occ=new Set();
+  const n=Math.floor(Math.random()*8)+8;while(occ.size<n)occ.add(`${Math.floor(Math.random()*R)}-${Math.floor(Math.random()*C)}`);
+  let h='<div class="teacher-desk">🧑‍🏫 讲台</div>';
+  const lb=['第一排(前)','第二排','第三排','第四排','第五排(后)'];
+  for(let r=0;r<R;r++){h+=`<div class="seat-label">${lb[r]}</div><div class="seat-row">`;
+    for(let c=0;c<C;c++){const k=`${r}-${c}`,o=occ.has(k);
+      h+=`<div class="seat ${o?'occupied':''}" data-r="${r}" data-c="${c}" ${o?'':`onclick="pickSeat(${r},${c},this)"`}>${o?'🧑‍🎓':''}</div>`;}h+='</div>';}
+  la.innerHTML=h;
+}
+
+function pickSeat(r,c,el){
+  document.querySelectorAll('.seat.selected').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');el.textContent='🙋';G.seatPos={row:r,col:c};
+  G.seatRisk=(1-(r/4)*.6)*((c===0||c===5)?.7:(c===1||c===4)?.85:1);
+  const nm=[];if(r<=1)nm.push('前排');else if(r>=3)nm.push('后排');else nm.push('中排');
+  if(c===0||c===5)nm.push('靠窗角落');else if(c===1||c===4)nm.push('侧边');else nm.push('中间');
+  G.seatName=nm.join('·');$('seat-confirm-btn').style.display='block';G.selectedSeat={r,c};
+}
+
+function confirmSeat(){showCD(()=>startClass());}
+function showCD(cb){const ms=['上课铃响了！','3','2','1','开始水课！'];let i=0;
+  (function nx(){if(i>=ms.length){cb();return;}const d=document.createElement('div');d.className='countdown-flash';d.textContent=ms[i];
+    document.body.appendChild(d);setTimeout(()=>d.remove(),780);i++;setTimeout(nx,850);})();}
+
+/* ═══ PHASE 4: CLASSROOM ═══ */
+function startClass(){
+  showScreen('classroom');
+  G.fishPoints=0;G.fishTarget=100;G.suspicion=0;G.totalTime=90;G.timeLeft=90;
+  G.currentAction='listen';G.teacherState='writing';G.caught=false;G.paused=false;
+  G.comboStreak=0;G.rollCallCount=0;G.quizCount=0;G.eventCooldown=0;G.usedQuizIds.clear();
+  $('your-seat-label').textContent=G.seatName;
+  $('teacher-sprite').innerHTML=`<div class="teacher-bubble" id="teacher-bubble"></div>${G.selectedCourse.teacherEmoji}`;
+  renderActs();updateHUD();gameLoop();
+}
+
+function renderActs(){$('actions-panel').innerHTML=ACTIONS.map(a=>`
+  <div class="action-btn ${a.id===G.currentAction?(a.id==='listen'?'listen-btn active':'active'):''}"
+    onclick="setAction('${a.id}')" id="act-${a.id}">
+    <span class="emoji">${a.emoji}</span><span class="label">${a.label}</span>
+    <span class="pts">${a.pts>0?'🐟+'+a.pts:'安全'} ${a.risk>0?'⚠️'+a.risk:''}</span>
+  </div>`).join('');}
+
+function setAction(id){
+  if(G.paused||G.caught)return;
+  if(id!=='listen'&&(G.teacherState==='scanning'||G.teacherState==='staring'))G.suspicion=Math.min(G.maxSuspicion,G.suspicion+5);
+  G.currentAction=id;
+  document.querySelectorAll('.action-btn').forEach(b=>b.classList.remove('active','listen-btn'));
+  const el=$('act-'+id);if(el){el.classList.add('active');if(id==='listen')el.classList.add('listen-btn');}
+}
+
+function gameLoop(){
+  if(G.classInterval)clearInterval(G.classInterval);if(G.teacherInterval)clearInterval(G.teacherInterval);
+
+  G.classInterval=setInterval(()=>{
+    if(G.paused||G.caught)return;
+    G.timeLeft--;G.eventCooldown--;
+    const a=ACTIONS.find(x=>x.id===G.currentAction);
+    if(a){if(a.pts>0){G.fishPoints=Math.min(G.fishTarget,G.fishPoints+a.pts*(2-G.seatRisk));G.comboStreak++;}
+      else{G.suspicion=Math.max(0,G.suspicion-1.5);G.comboStreak=0;}
+      if(a.risk>0){let rg=a.risk*G.seatRisk;if(G.teacherState==='scanning')rg*=2.5;if(G.teacherState==='staring')rg*=4;G.suspicion=Math.min(G.maxSuspicion,G.suspicion+rg);}}
+    G.suspicion=Math.max(0,G.suspicion-.3);
+    if(G.suspicion>=G.maxSuspicion){getCaught();return;}
+    if(G.timeLeft<=0){classOver();return;}
+    if(G.eventCooldown<=0&&Math.random()<.06){triggerEvent();G.eventCooldown=7+Math.floor(Math.random()*5);}
+    updateHUD();
+  },1000);
+
+  G.teacherInterval=setInterval(()=>{if(G.paused||G.caught)return;updateTeacher();},800);
+}
+
+function updateTeacher(){
+  const c=G.selectedCourse,r=Math.random();
+  switch(G.teacherState){
+    case'writing':case'lecturing':
+      G.teacherTimer--;if(G.teacherTimer<=0){
+        if(r<c.scanRate){G.teacherState='scanning';G.teacherTimer=c.scanDuration+Math.floor(Math.random()*3);}
+        else if(r<c.scanRate+c.rollCallChance&&G.rollCallCount<4){G.teacherState='rollcall';G.teacherTimer=1;}
+        else{G.teacherState=r<.5?'writing':'lecturing';G.teacherTimer=5+Math.floor(Math.random()*8);}
+        if(c.type==='unpredictable'&&Math.random()<.15){G.teacherState='staring';G.teacherTimer=2+Math.floor(Math.random()*3);}}break;
+    case'scanning':G.teacherTimer--;if(G.teacherTimer<=0){G.teacherState=Math.random()<.3?'lecturing':'writing';G.teacherTimer=4+Math.floor(Math.random()*6);}break;
+    case'staring':G.teacherTimer--;if(G.teacherTimer<=0){G.teacherState='lecturing';G.teacherTimer=3+Math.floor(Math.random()*5);}break;
+    case'rollcall':G.teacherState='lecturing';G.teacherTimer=6;
+      [triggerMathRC,triggerQuiz,triggerOpinion,triggerReadBoard][Math.floor(Math.random()*4)]();return;
+  }
+  updateTeacherUI();
+}
+
+function updateTeacherUI(){
+  const s=$('teacher-status'),sp=$('teacher-sprite'),b=$('teacher-bubble'),bb=$('blackboard-text'),c=G.selectedCourse;
+  switch(G.teacherState){
+    case'writing':s.textContent='✍️ 背对黑板写字中...';s.className='teacher-status';sp.style.transform='scaleX(-1)';
+      bb.textContent=c.blackboardTexts[Math.floor(Math.random()*c.blackboardTexts.length)];b.classList.remove('show');break;
+    case'lecturing':s.textContent='🗣️ 低头讲课中...';s.className='teacher-status';sp.style.transform='scaleX(1)';
+      if(Math.random()<.2){b.textContent=c.speeches[Math.floor(Math.random()*c.speeches.length)];b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2500);}break;
+    case'scanning':s.textContent='👀 正在扫视教室！';s.className='teacher-status looking';sp.style.transform='scaleX(1)';b.textContent='👀...';b.classList.add('show');break;
+    case'staring':s.textContent='😠 盯着你这边看！';s.className='teacher-status looking';sp.style.transform='scaleX(1)';b.textContent='那边的同学...?';b.classList.add('show');break;
+  }
+}
+
+function updateHUD(){
+  const fp=Math.min(100,G.fishPoints/G.fishTarget*100),dp=Math.min(100,G.suspicion/G.maxSuspicion*100);
+  $('fish-bar').style.width=fp+'%';$('fish-val').textContent=Math.floor(fp)+'%';
+  $('danger-bar').style.width=dp+'%';$('danger-val').textContent=Math.floor(dp)+'%';
+  if(dp>70)$('danger-bar').style.background='linear-gradient(90deg,#e74c3c,#c0392b)';
+  else if(dp>40)$('danger-bar').style.background='linear-gradient(90deg,#f39c12,#e74c3c)';
+  else $('danger-bar').style.background='linear-gradient(90deg,#f39c12,#e67e22)';
+  const m=Math.floor(G.timeLeft/2),s=(G.timeLeft%2)*30;
+  $('class-timer').textContent=`${String(m).padStart(2,'0')}:${s===0?'00':'30'}`;
+  if(G.timeLeft<=10)$('class-timer').style.color=G.timeLeft%2===0?'var(--danger)':'var(--accent)';
+}
+
+function getCaught(){
+  G.caught=true;clearInterval(G.classInterval);clearInterval(G.teacherInterval);
+  const ms=['"出去站着！"','老师没收了你的手机','"平时分别想要了！"','被当众批评了...'];
+  setTimeout(()=>{showScreen('result');const fp=Math.floor(G.fishPoints/G.fishTarget*100);
+    $('result-card').innerHTML=`<div class="result-emoji">😭</div><div class="result-title">被抓了！</div>
+      <div class="grade-badge" style="background:var(--danger);">水课失败</div>
+      <div class="result-desc">${ms[Math.floor(Math.random()*ms.length)]}</div>
+      <div class="result-stats">
+        <div class="stat-box"><div class="stat-val">${fp}%</div><div class="stat-label">摸鱼完成度</div></div>
+        <div class="stat-box"><div class="stat-val">${Math.floor((1-G.timeLeft/G.totalTime)*100)}%</div><div class="stat-label">课程进度</div></div>
+        <div class="stat-box"><div class="stat-val">${G.quizCount}</div><div class="stat-label">被提问</div></div>
+      </div><button class="btn btn-primary" onclick="backToTitle()">再来一次</button>`;},300);
+}
+
+function classOver(){
+  clearInterval(G.classInterval);clearInterval(G.teacherInterval);
+  const fp=Math.floor(G.fishPoints/G.fishTarget*100);let g,gc,em,ti,de;
+  if(fp>=90){g='S';gc='#e74c3c';em='🏆';ti='摸鱼之王！';de='极致摸鱼，堪称传说！';}
+  else if(fp>=70){g='A';gc='#f39c12';em='🐟';ti='资深摸鱼人';de='技术纯熟！';}
+  else if(fp>=50){g='B';gc='#3498db';em='😏';ti='合格水友';de='成功混过一节课！';}
+  else if(fp>=25){g='C';gc='#27ae60';em='😐';ti='半听半摸';de='胆子可以再大点（不是）';}
+  else{g='D';gc='#95a5a6';em='📖';ti='好学生警告';de='你几乎没摸鱼...这可是水课啊！';}
+
+  setTimeout(()=>{showScreen('result');
+    $('result-card').innerHTML=`<div class="result-emoji">${em}</div><div class="result-title">${ti}</div>
+      <div class="grade-badge" style="background:${gc};">评级: ${g}</div>
+      <div class="result-desc">${de}</div>
+      <div class="result-stats">
+        <div class="stat-box"><div class="stat-val">${fp}%</div><div class="stat-label">摸鱼完成度</div></div>
+        <div class="stat-box"><div class="stat-val">${Math.floor(G.suspicion)}%</div><div class="stat-label">最终怀疑值</div></div>
+        <div class="stat-box"><div class="stat-val">${G.quizCount}</div><div class="stat-label">被提问</div></div>
+        <div class="stat-box"><div class="stat-val">${G.rollCallCount}</div><div class="stat-label">被点名</div></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="backToTitle()">再来一次</button>
+        <button class="btn" onclick="startGame()">换一门课</button>
+      </div>`;},300);
+}
+
+function backToTitle(){showScreen('title');}
+
+document.addEventListener('keydown',e=>{
+  if(G.currentScreen!=='classroom'||G.paused||G.caught)return;
+  const m={'1':'listen','2':'daze','3':'doodle','4':'novel','5':'phone','6':'sleep',
+    q:'listen',w:'daze',e:'doodle',r:'novel',t:'phone',y:'sleep',' ':'listen'};
+  const a=m[e.key];if(a){e.preventDefault();setAction(a);}
+});
+</script>
+</body>
+</html>
